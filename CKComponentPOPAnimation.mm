@@ -65,11 +65,3 @@ static CKComponentAnimationHooks hooksForPOPAnimation(CKComponent *component, PO
 
 CKComponentPOPAnimation::CKComponentPOPAnimation(CKComponent *component, POPAnimation *animation) :
 CKComponentAnimation(hooksForPOPAnimation(component, animation)) {}
-
-
-
-
-
-
-
-
