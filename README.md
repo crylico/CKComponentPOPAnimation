@@ -1,5 +1,5 @@
 # CKComponentPOPAnimation
-A simple extension to add support to ComponentKit for POP animations.  This extension relies on `NSCopying` adherance for `POPAniamtion` and its subclasses, which is not yet in a version release, but is live in the POP's master branch.
+A simple extension to add support to ComponentKit for POP animations.  This extension relies on `NSCopying` adherance for `POPAnimation` and its subclasses, which is not yet in a version release, but is live in the POP's master branch.
 
 ##Get Started
 
