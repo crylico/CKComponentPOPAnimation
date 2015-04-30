@@ -21,5 +21,5 @@ At this point, you'll need to either use the 'bleeding edge' instructions for PO
 	    rotate.springBounciness = 10;
 
 		// 	Return a vector containing the CKComponentPOPAnimation constructor.
-	    return {CKComponentPOPAnimation(component, rotationAnimation)};
+	    return {CKComponentPOPAnimation(component, rotationAnimation, YES)}; // YES for layer animation (kPOPLayerRotation)
 	}
