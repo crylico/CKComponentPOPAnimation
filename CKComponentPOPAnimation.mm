@@ -33,7 +33,7 @@
 
 @end
 
-static CKComponentAnimationHooks hooksForPOPAnimation(CKComponent *component, POPAnimation *origAnimation)
+static CKComponentAnimationHooks hooksForPOPAnimation(CKComponent *component, POPAnimation *origAnimation, BOOL isLayer)
 {
     CKCAssertNotNil(component, @"Component being animated must be non-nil");
     CKCAssertNotNil(origAnimation, @"Animation being added must be non-nil");
@@ -44,18 +44,36 @@ static CKComponentAnimationHooks hooksForPOPAnimation(CKComponent *component, PO
     
     return {
         .didRemount = ^(id context){
-            CALayer *layer = component.viewForAnimation.layer;
-            CKCAssertNotNil(layer, @"%@ has no mounted view, so it cannot be animated", [component class]);
-            NSString *key = [[NSUUID UUID] UUIDString];
-            
-            // CAMediaTiming beginTime is specified in the time space of the superlayer. Since the component has no way to
-            // access the superlayer when constructing the animation, we document that beginTime should be specified in
-            // absolute time and perform the adjustment here.
-            if (copiedAnimation.beginTime != 0.0) {
-                copiedAnimation.beginTime = [layer.superlayer convertTime:copiedAnimation.beginTime fromLayer:nil];
+            if(isLayer) {
+                
+                CALayer *layer = component.viewForAnimation.layer;
+                CKCAssertNotNil(layer, @"%@ has no mounted view, so it cannot be animated", [component class]);
+                NSString *key = [[NSUUID UUID] UUIDString];
+                
+                // CAMediaTiming beginTime is specified in the time space of the superlayer. Since the component has no way to
+                // access the superlayer when constructing the animation, we document that beginTime should be specified in
+                // absolute time and perform the adjustment here.
+                if (copiedAnimation.beginTime != 0.0) {
+                    copiedAnimation.beginTime = [layer.superlayer convertTime:copiedAnimation.beginTime fromLayer:nil];
+                }
+                [layer pop_addAnimation:copiedAnimation forKey:key];
+                return [[CKAppliedPOPAnimationContext alloc] initWithTargetLayer:layer key:key];
             }
-            [layer pop_addAnimation:copiedAnimation forKey:key];
-            return [[CKAppliedPOPAnimationContext alloc] initWithTargetLayer:layer key:key];
+            else {
+                
+                UIView *view = component.viewForAnimation;
+                CKCAssertNotNil(view, @"%@ has no mounted view, so it cannot be aniamted", [component class]);
+                NSString *key = [[NSUUID UUID] UUIDString];
+                
+                // CAMediaTiming beginTime is specified in the time space of the superlayer. Since the component has no way to
+                // access the superlayer when constructing the animation, we document that beginTime should be specified in
+                // absolute time and perform the adjustment here.
+                if (copiedAnimation.beginTime != 0.0) {
+                    copiedAnimation.beginTime = [view.layer.superlayer convertTime:copiedAnimation.beginTime fromLayer:nil];
+                }
+                [view pop_addAnimation:copiedAnimation forKey:key];
+                return [[CKAppliedPOPAnimationContext alloc] initWithTargetLayer:(CALayer *)view key:key];
+            }
         },
         .cleanup = ^(CKAppliedPOPAnimationContext *context){
             [context.targetLayer pop_removeAnimationForKey:context.key];
@@ -63,5 +81,13 @@ static CKComponentAnimationHooks hooksForPOPAnimation(CKComponent *component, PO
     };
 }
 
-CKComponentPOPAnimation::CKComponentPOPAnimation(CKComponent *component, POPAnimation *animation) :
-CKComponentAnimation(hooksForPOPAnimation(component, animation)) {}
+CKComponentPOPAnimation::CKComponentPOPAnimation(CKComponent *component, POPAnimation *animation, BOOL isLayer) :
+CKComponentAnimation(hooksForPOPAnimation(component, animation, isLayer)) {}
+
+
+
+
+
+
+
+

@@ -12,5 +12,10 @@
 
 struct CKComponentPOPAnimation : CKComponentAnimation {
     
-    CKComponentPOPAnimation(CKComponent *component, POPAnimation *animation);
+    /**
+     *    @param component the component to animate
+     *    @param animation the animation to apply to the component's view/layer
+     *    @param isLayer whether the animation should be applied to the component's view or that view's layer. Defaults to NO (view animation).
+     */
+    CKComponentPOPAnimation(CKComponent *component, POPAnimation *animation, BOOL isLayer=NO);
 };
