@@ -8,7 +8,7 @@
 
 #import <ComponentKit/CKComponentAnimation.h>
 
-@class POPAnimation;
+@class POPPropertyAnimation;
 
 struct CKComponentPOPAnimation : CKComponentAnimation {
     
@@ -17,5 +17,5 @@ struct CKComponentPOPAnimation : CKComponentAnimation {
      *    @param animation the animation to apply to the component's view/layer
      *    @param isLayer whether the animation should be applied to the component's view or that view's layer. Defaults to NO (view animation).
      */
-    CKComponentPOPAnimation(CKComponent *component, POPAnimation *animation, BOOL isLayer=NO);
+    CKComponentPOPAnimation(CKComponent *component, POPPropertyAnimation *animation);
 };

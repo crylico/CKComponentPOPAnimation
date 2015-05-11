@@ -33,19 +33,19 @@
 
 @end
 
-static CKComponentAnimationHooks hooksForPOPAnimation(CKComponent *component, POPAnimation *origAnimation, BOOL isLayer)
+static CKComponentAnimationHooks hooksForPOPAnimation(CKComponent *component, POPPropertyAnimation *origAnimation)
 {
     CKCAssertNotNil(component, @"Component being animated must be non-nil");
     CKCAssertNotNil(origAnimation, @"Animation being added must be non-nil");
     
     // Don't mutate the animation the component returned, in case it is a static or otherwise reused. (Also copy
     // immediately to protect against the *caller* mutating the animation after this point but before it's used.)
-    POPAnimation *copiedAnimation = [origAnimation copy];
+    POPPropertyAnimation *copiedAnimation = [origAnimation copy];
     
     return {
         .didRemount = ^(id context){
             CALayer *layer = component.viewForAnimation.layer;
-            id animatable = isLayer ? layer : component.viewForAnimation;
+            id animatable = copiedAnimation.isLayerAnimation ? layer : component.viewForAnimation;
 
             CKCAssertNotNil(layer, @"%@ has no mounted view, so it cannot be animated", [component class]);
             NSString *key = [[NSUUID UUID] UUIDString];
@@ -65,8 +65,9 @@ static CKComponentAnimationHooks hooksForPOPAnimation(CKComponent *component, PO
     };
 }
 
-CKComponentPOPAnimation::CKComponentPOPAnimation(CKComponent *component, POPAnimation *animation, BOOL isLayer) :
-CKComponentAnimation(hooksForPOPAnimation(component, animation, isLayer)) {}
+CKComponentPOPAnimation::CKComponentPOPAnimation(CKComponent *component, POPPropertyAnimation *animation) :
+CKComponentAnimation(hooksForPOPAnimation(component, animation)) {}
+
 
 
 
