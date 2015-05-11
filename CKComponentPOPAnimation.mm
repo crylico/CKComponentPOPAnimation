@@ -13,19 +13,19 @@
 
 @interface CKAppliedPOPAnimationContext : NSObject
 
-@property (nonatomic, strong, readonly) CALayer *targetLayer;
+@property (nonatomic, strong, readonly) id animatable;
 @property (nonatomic, copy, readonly) NSString *key;
 
-- (instancetype)initWithTargetLayer:(CALayer *)layer key:(NSString *)key;
+- (instancetype)initWithTargetAnimatable:(id)animatable key:(NSString *)key;
 
 @end
 
 @implementation CKAppliedPOPAnimationContext
 
-- (instancetype)initWithTargetLayer:(CALayer *)targetLayer key:(NSString *)key
+- (instancetype)initWithTargetAnimatable:(CALayer *)animatable key:(NSString *)key
 {
     if (self = [super init]) {
-        _targetLayer = targetLayer;
+        _animatable = animatable;
         _key = [key copy];
     }
     return self;
@@ -44,39 +44,23 @@ static CKComponentAnimationHooks hooksForPOPAnimation(CKComponent *component, PO
     
     return {
         .didRemount = ^(id context){
-            if(isLayer) {
-                
-                CALayer *layer = component.viewForAnimation.layer;
-                CKCAssertNotNil(layer, @"%@ has no mounted view, so it cannot be animated", [component class]);
-                NSString *key = [[NSUUID UUID] UUIDString];
-                
-                // CAMediaTiming beginTime is specified in the time space of the superlayer. Since the component has no way to
-                // access the superlayer when constructing the animation, we document that beginTime should be specified in
-                // absolute time and perform the adjustment here.
-                if (copiedAnimation.beginTime != 0.0) {
-                    copiedAnimation.beginTime = [layer.superlayer convertTime:copiedAnimation.beginTime fromLayer:nil];
-                }
-                [layer pop_addAnimation:copiedAnimation forKey:key];
-                return [[CKAppliedPOPAnimationContext alloc] initWithTargetLayer:layer key:key];
+            CALayer *layer = component.viewForAnimation.layer;
+            id animatable = isLayer ? layer : component.viewForAnimation;
+
+            CKCAssertNotNil(layer, @"%@ has no mounted view, so it cannot be animated", [component class]);
+            NSString *key = [[NSUUID UUID] UUIDString];
+            
+            // CAMediaTiming beginTime is specified in the time space of the superlayer. Since the component has no way to
+            // access the superlayer when constructing the animation, we document that beginTime should be specified in
+            // absolute time and perform the adjustment here.
+            if (copiedAnimation.beginTime != 0.0) {
+                copiedAnimation.beginTime = [layer.superlayer convertTime:copiedAnimation.beginTime fromLayer:nil];
             }
-            else {
-                
-                UIView *view = component.viewForAnimation;
-                CKCAssertNotNil(view, @"%@ has no mounted view, so it cannot be aniamted", [component class]);
-                NSString *key = [[NSUUID UUID] UUIDString];
-                
-                // CAMediaTiming beginTime is specified in the time space of the superlayer. Since the component has no way to
-                // access the superlayer when constructing the animation, we document that beginTime should be specified in
-                // absolute time and perform the adjustment here.
-                if (copiedAnimation.beginTime != 0.0) {
-                    copiedAnimation.beginTime = [view.layer.superlayer convertTime:copiedAnimation.beginTime fromLayer:nil];
-                }
-                [view pop_addAnimation:copiedAnimation forKey:key];
-                return [[CKAppliedPOPAnimationContext alloc] initWithTargetLayer:(CALayer *)view key:key];
-            }
+            [animatable pop_addAnimation:copiedAnimation forKey:key];
+            return [[CKAppliedPOPAnimationContext alloc] initWithTargetAnimatable:animatable key:key];
         },
         .cleanup = ^(CKAppliedPOPAnimationContext *context){
-            [context.targetLayer pop_removeAnimationForKey:context.key];
+            [context.animatable pop_removeAnimationForKey:context.key];
         }
     };
 }
